@@ -1,33 +1,43 @@
 import re
 
-from sentence_transformers import SentenceTransformer, util
+import openai
+import os
 
-model = SentenceTransformer('all-MiniLM-L6-v2')
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# Define weak/low-signal semantic examples
-low_signal_examples = [
-    "i don't know", "you tell me", "whatever", "test", "ok", "hi", "what", "idk",
-    "not sure", "nothing really", "anything", "meh", "i guess", "does it matter"
+# Examples of low-value inputs to compare against
+low_signal_prompts = [
+    "i don't know", "you tell me", "idk", "whatever", "help", "test", "meh", "ok", "nothing", "nah"
 ]
 
-low_signal_embeddings = model.encode(low_signal_examples, convert_to_tensor=True)
+# Fetch OpenAI embeddings
+def get_embedding(text):
+    response = openai.Embedding.create(
+        input=text,
+        model="text-embedding-ada-002"
+    )
+    return response['data'][0]['embedding']
 
-def is_meaningful_input(text, threshold=0.75):
-    user_embedding = model.encode(text, convert_to_tensor=True)
+# Cosine similarity
+def cosine_similarity(vec1, vec2):
+    dot = sum(a * b for a, b in zip(vec1, vec2))
+    norm1 = sum(a**2 for a in vec1) ** 0.5
+    norm2 = sum(b**2 for b in vec2) ** 0.5
+    return dot / (norm1 * norm2)
 
-    similarity_scores = util.cos_sim(user_embedding, low_signal_embeddings)
-    max_score = similarity_scores.max().item()
+# Master check
+def is_meaningful_input(user_input, threshold=0.80):
+    user_vec = get_embedding(user_input)
 
-    # If too similar to low-effort examples, reject
-    if max_score >= threshold:
-        return False
+    for example in low_signal_prompts:
+        example_vec = get_embedding(example)
+        score = cosine_similarity(user_vec, example_vec)
+        if score > threshold:
+            return False
 
-    # Optionally: enforce minimum token depth
-    tokens = text.strip().split()
-    if len(tokens) < 3:
-        return False
+    # Extra check for word count
+    return len(user_input.strip().split()) >= 3
 
-    return True
 
 
 def process_input(user_input, gpt_output):
