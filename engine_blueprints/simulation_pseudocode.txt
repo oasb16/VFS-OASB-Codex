@@ -1,0 +1,1 @@
+If Ξ loop detected, inject ψ₀ field and rotate via 𝕀 axis.
