@@ -33,12 +33,12 @@ if st.button("Interpret Symbolically"):
         st.write(symbolic_output["scroll"])
 
         st.markdown(f"### 🌀 Symbol Activated\nSymbol: {symbolic_output['symbol']}")
-        st.markdown(f"### 🔍 Symbolic Interpretation\n{symbolic_output['interpretation']}")
+        if symbolic_output["secondary_symbols"]:
+            st.markdown(f"**Also Detected:** {', '.join(symbolic_output['secondary_symbols'])}")
 
-        # 🔁 New: Signal Strength & Rating
-        st.markdown("### 📈 Signal Quality")
+        st.markdown(f"### 🔍 Symbolic Interpretation\n{symbolic_output['interpretation']}")
+        st.markdown(f"### 📈 Signal Quality")
         st.write(f"**Rating:** {symbolic_output['rating']}  \n**Score:** {symbolic_output['score']}")
 
-        # 🔮 New: Follow-up question based on symbolic logic
         st.markdown("### 🔁 Suggested Follow-up Prompt")
         st.info(symbolic_output["suggested_followup"])
