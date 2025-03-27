@@ -1,11 +1,26 @@
 import re
+import spacy
+
+nlp = spacy.load("en_core_web_sm")
 
 def is_meaningful_input(text):
     stripped = text.strip().lower()
-    if len(stripped) < 4 or stripped in {"asd", "test", "ok", "hello", "hi", "hmm"}:
+    if len(stripped) < 10:
+        return False
+    if stripped in {"asd", "test", "ok", "hello", "hi", "hmm", "123", "..." }:
         return False
     if not any(char.isalpha() for char in stripped):
         return False
+
+    doc = nlp(stripped)
+    
+    # Count content-carrying parts of speech
+    content_tokens = [token for token in doc if token.pos_ in {"NOUN", "VERB", "ADJ", "ADV"}]
+    
+    # If there are too few content-bearing words, block
+    if len(content_tokens) < 2:
+        return False
+
     return True
 
 def process_input(user_input, gpt_output):
