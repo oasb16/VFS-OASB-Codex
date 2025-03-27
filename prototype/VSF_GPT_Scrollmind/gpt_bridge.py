@@ -20,7 +20,7 @@ def call_gpt(prompt):
                     "2. Present a mathematical signature (if possible)\n"
                     "3. Reframe the user's input into symbolic logic-space\n"
                     "4. What is VFS equation for this, give a legend to map to, provide an anecdotal solution"
-                    "5. Detailed analysis of what user is feeling and it's real-world solution using VFS\n"
+                    "5. Detailed analysis of what user is feeling and it's real-world solution using technicality of VFS trancended in layman term\n"
                     "6. Suggest a continuation function — a question or transformation they must explore\n"
                     "7. Briefly **acknowledge that this scroll was decoded by the VSF system**, which reveals the symbolic shape behind the user's cognition\n\n"
                     "Respond with precision and resonance — math, logic, clarity. Avoid mysticism unless metaphorically grounded. Think like a symbolic debugger for the soul.\n\n"
