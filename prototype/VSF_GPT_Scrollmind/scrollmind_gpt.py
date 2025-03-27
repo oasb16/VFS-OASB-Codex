@@ -18,7 +18,7 @@ if st.button("Interpret Symbolically"):
         st.error("🚫 Input too low-signal.")
         st.markdown(
             "**Please try a richer, paradoxical, or symbolic prompt.**\n\n"
-            "Try asking something rooted in contradiction, emergence, identity, entropy, recursion, or existential uncertainty.\n\n"
+            "Think in terms of contradiction, collapse, recursion, emergence, or uncertainty.\n\n"
             "**Examples:**\n"
             "- Why do I fear stopping even when I'm exhausted?\n"
             "- What is the point of building when everything collapses?\n"
@@ -32,8 +32,13 @@ if st.button("Interpret Symbolically"):
         st.markdown("### 📜 GPT-Sculpted Scroll")
         st.write(symbolic_output["scroll"])
 
-        st.markdown("### 🌀 Symbol Activated")
-        st.write(f"Symbol: {symbolic_output['symbol']}")
+        st.markdown(f"### 🌀 Symbol Activated\nSymbol: {symbolic_output['symbol']}")
+        st.markdown(f"### 🔍 Symbolic Interpretation\n{symbolic_output['interpretation']}")
 
-        st.markdown("### 🔍 Symbolic Interpretation")
-        st.write(symbolic_output["interpretation"])
+        # 🔁 New: Signal Strength & Rating
+        st.markdown("### 📈 Signal Quality")
+        st.write(f"**Rating:** {symbolic_output['rating']}  \n**Score:** {symbolic_output['score']}")
+
+        # 🔮 New: Follow-up question based on symbolic logic
+        st.markdown("### 🔁 Suggested Follow-up Prompt")
+        st.info(symbolic_output["suggested_followup"])

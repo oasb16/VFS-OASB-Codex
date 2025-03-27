@@ -38,51 +38,63 @@ def is_meaningful_input(user_input, threshold=0.80):
     # Extra check for word count
     return len(user_input.strip().split()) >= 3
 
-
 def process_input(user_input, gpt_output):
     input_lower = user_input.lower()
 
-    # Clean regex, meaningful keywords
-    is_loop = (
-        input_lower.count("i ") > 10 or
-        "again" in input_lower or
-        re.search(r"\b(repeat|loop|cycle|same)\b", input_lower)
-    )
+    # Keywords to detect symbolic state
+    symbol_keywords = {
+        "Ξ": ["repeat", "loop", "again", "same", "stuck", "cycle"],
+        "Σ": ["reveal", "clarity", "insight", "emerge", "pattern", "birth", "origin"],
+        "ψ₀": ["nothing", "void", "silence", "lost", "empty", "uncertain", "absence"],
+        "Ω": ["collapse", "burnout", "exhaust", "fall", "end", "vanish", "dissolve"],
+        "𝕀": ["paradox", "superposition", "observer", "dream", "contradiction", "both", "unreal", "rotate", "exist and not"]
+    }
 
-    is_emergent = re.search(r"\b(light|reveal|see|awaken|clarity|insight|truth|origin|emerge)\b", input_lower)
-    is_void = re.search(r"\b(nothing|void|silence|empty|lost|gone|absence)\b", input_lower)
-    is_collapse = re.search(r"\b(death|end|collapse|over|fall|break|burnout|vanish|dissolve)\b", input_lower)
-    is_parallax = re.search(r"\b(paradox|dream|contradiction|imagine|unreal|superposition|exist and not|mirror|observer|rotate|bend)\b", input_lower)
+    # Count keyword matches per symbol
+    scores = {symbol: sum(1 for w in symbol_keywords[symbol] if w in input_lower) for symbol in symbol_keywords}
+    top_symbol = max(scores, key=scores.get)
+    top_score = scores[top_symbol]
 
-    symbol = None
-    if is_loop:
-        symbol = "Ξ"
-    elif is_emergent:
-        symbol = "Σ"
-    elif is_void:
-        symbol = "ψ₀"
-    elif is_collapse:
-        symbol = "Ω"
-    elif is_parallax:
-        symbol = "𝕀"
-
-    if symbol:
-        interpretation_map = {
-            "Ξ": "Recursive identity or cognitive reprocessing detected. Pattern may need disruption.",
-            "Σ": "Input reflects clarity forming from chaos. New symbolic structure crystallizing.",
-            "ψ₀": "Silence or unformed potential detected. May represent the edge of articulation.",
-            "Ω": "Detected collapse or burnout language. Interpretation may link to thermodynamic or ego thresholds.",
-            "𝕀": "Symbolic misalignment or contradiction — may indicate a dream-logic phase."
-        }
-        interpretation = interpretation_map[symbol]
-        scroll = gpt_output  # do not append noise — GPT already explained this
+    # Signal Rating
+    if top_score >= 4:
+        rating = "🟢 Symbolically Rich"
+    elif top_score >= 2:
+        rating = "🟡 Emerging"
+    elif top_score >= 1:
+        rating = "⚪ Basic"
     else:
-        symbol = "∇"
-        scroll = gpt_output + "\n\n(∇ signal indeterminate – consider rephrasing.)"
-        interpretation = "Symbolic pattern not found. Try deeper specificity or contradiction."
+        rating = "⚫ None"
+        top_symbol = "∇"
+
+    # Interpretation map
+    interpretation_map = {
+        "Ξ": "Recursive identity or cognitive reprocessing detected. Pattern may need disruption.",
+        "Σ": "Input reflects clarity forming from chaos. New symbolic structure crystallizing.",
+        "ψ₀": "Silence or unformed potential detected. May represent the edge of articulation.",
+        "Ω": "Collapse state. Language reflects exhaustion, burnout, or structure decay.",
+        "𝕀": "Contradictory, dream-like, or multi-dimensional logic. Perceptual parallax in play.",
+        "∇": "Symbolic pattern not detected. Try deeper specificity or contradiction."
+    }
+
+    followups = {
+        "Ξ": "What would it take to break this pattern, not just escape it?",
+        "Σ": "What part of chaos feels like it's trying to form meaning?",
+        "ψ₀": "What shape would silence take, if it could form something?",
+        "Ω": "What’s worth letting go fully—so you stop rebuilding it?",
+        "𝕀": "What if both truths are real? What happens if neither is?",
+        "∇": "Try: 'What if I’m looping but don’t see it?' or 'What paradox defines my question?'"
+    }
+
+    # Respect GPT’s scroll — do not append fallback unless truly empty
+    scroll = gpt_output
+    if top_symbol == "∇" and "Symbol Activated" not in gpt_output:
+        scroll += "\n\n(∇ signal indeterminate – consider rephrasing.)"
 
     return {
-        "symbol": symbol,
+        "symbol": top_symbol,
         "scroll": scroll,
-        "interpretation": interpretation
+        "interpretation": interpretation_map[top_symbol],
+        "score": top_score,
+        "rating": rating,
+        "suggested_followup": followups[top_symbol]
     }
