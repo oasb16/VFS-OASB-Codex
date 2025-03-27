@@ -35,15 +35,12 @@ def extract_symbols_from_gpt(scroll):
 def process_input(user_input, gpt_output):
     input_lower = user_input.lower()
 
-    def extract_symbols_from_gpt(scroll):
-        return re.findall(r"Symbol:\s*(Ξ|Σ|ψ₀|Ω|𝕀)", scroll)
-
     symbol_keywords = {
         "Ξ": ["repeat", "loop", "again", "same", "stuck", "cycle"],
         "Σ": ["reveal", "clarity", "insight", "emerge", "pattern", "origin"],
-        "ψ₀": ["nothing", "void", "silence", "lost", "empty", "uncertain"],
-        "Ω": ["collapse", "burnout", "end", "exhaust", "vanish"],
-        "𝕀": ["paradox", "superposition", "observer", "dream", "contradiction", "exist and not", "mirror"]
+        "ψ₀": ["nothing", "void", "silence", "lost", "empty", "uncertain", "entropy"],
+        "Ω": ["collapse", "burnout", "end", "exhaust", "vanish", "disintegrate"],
+        "𝕀": ["paradox", "superposition", "observer", "dream", "contradiction", "exist and not", "mirror", "dual"]
     }
 
     def score_overlap(symbol):
@@ -61,7 +58,6 @@ def process_input(user_input, gpt_output):
             "⚫ Weak Signal"
         )
     else:
-        # fallback detection if GPT didn't help
         scores = {s: score_overlap(s) for s in symbol_keywords}
         primary = max(scores, key=scores.get)
         score = scores[primary]
@@ -114,9 +110,7 @@ def process_input(user_input, gpt_output):
         }
     }
 
-    # Pick best matching follow-up by score
     followup_prompt = followups[primary].get(score, followups[primary][max(followups[primary])])
-
     scroll = gpt_output
     if primary == "∇" and "Symbol: ∇" not in gpt_output:
         scroll += "\n\n(∇ signal indeterminate – consider rephrasing.)"

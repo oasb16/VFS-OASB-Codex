@@ -34,7 +34,6 @@ with st.expander("📘 What is the Void Singularity Function (VSF)? CLICK HERE",
 
 user_input = st.text_area("Enter your thought, emotion, or paradox:", height=200)
 
-
 if st.button("Interpret Symbolically"):
     if not is_meaningful_input(user_input):
         st.error("🚫 Input too low-signal.")
@@ -59,7 +58,7 @@ if st.button("Interpret Symbolically"):
             st.markdown(f"**Also Detected:** {', '.join(symbolic_output['secondary_symbols'])}")
 
         st.markdown(f"### 🔍 Symbolic Interpretation\n{symbolic_output['interpretation']}")
-        st.markdown(f"### 📈 Signal Quality")
+        st.markdown("### 📈 Signal Quality")
         st.write(f"**Rating:** {symbolic_output['rating']}  \n**Score:** {symbolic_output['score']}")
 
         st.markdown("### 🔁 Suggested Follow-up Prompt")
