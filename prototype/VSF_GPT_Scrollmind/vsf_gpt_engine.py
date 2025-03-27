@@ -12,11 +12,11 @@ low_signal_prompts = [
 
 # Fetch OpenAI embeddings
 def get_embedding(text):
-    response = openai.Embedding.create(
+    response = openai.embeddings.create(
         input=text,
         model="text-embedding-ada-002"
     )
-    return response['data'][0]['embedding']
+    return response.data[0].embedding
 
 # Cosine similarity
 def cosine_similarity(vec1, vec2):
