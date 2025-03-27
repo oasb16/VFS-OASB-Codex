@@ -11,7 +11,7 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 st.set_page_config(page_title="VSF-GPT Scrollmind", layout="wide")
 st.title("🧠 VSF-GPT Dynamic Scrollmind")
 
-with st.expander("📘 What is the Void Singularity Function (VSF)?", expanded=True):
+with st.expander("📘 What is the Void Singularity Function (VSF)? CLICK HERE", expanded=False):
     st.markdown(
         """
         **The Void Singularity Function (VSF)** is a symbolic reasoning system that interprets your input
