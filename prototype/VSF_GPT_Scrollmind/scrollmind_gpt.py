@@ -2,7 +2,7 @@ import streamlit as st
 import openai
 from dotenv import load_dotenv
 import os
-from vsf_gpt_engine import process_input, is_meaningful_input
+from modules.vsf_gpt_engine import process_input, is_meaningful_input
 from gpt_bridge import call_gpt
 
 load_dotenv()
