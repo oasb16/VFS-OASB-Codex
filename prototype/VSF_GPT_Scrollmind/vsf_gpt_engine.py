@@ -1,26 +1,33 @@
 import re
-import nltk
-from nltk.tokenize import word_tokenize
-from nltk import pos_tag
 
-nltk.download('punkt')
-nltk.download('averaged_perceptron_tagger')
+from sentence_transformers import SentenceTransformer, util
 
-def is_meaningful_input(text):
-    stripped = text.strip().lower()
-    if len(stripped) < 10 or stripped in {"asd", "test", "ok", "hello", "hi", "hmm", "..."}:
+model = SentenceTransformer('all-MiniLM-L6-v2')
+
+# Define weak/low-signal semantic examples
+low_signal_examples = [
+    "i don't know", "you tell me", "whatever", "test", "ok", "hi", "what", "idk",
+    "not sure", "nothing really", "anything", "meh", "i guess", "does it matter"
+]
+
+low_signal_embeddings = model.encode(low_signal_examples, convert_to_tensor=True)
+
+def is_meaningful_input(text, threshold=0.75):
+    user_embedding = model.encode(text, convert_to_tensor=True)
+
+    similarity_scores = util.cos_sim(user_embedding, low_signal_embeddings)
+    max_score = similarity_scores.max().item()
+
+    # If too similar to low-effort examples, reject
+    if max_score >= threshold:
         return False
-    if not any(char.isalpha() for char in stripped):
+
+    # Optionally: enforce minimum token depth
+    tokens = text.strip().split()
+    if len(tokens) < 3:
         return False
 
-    tokens = word_tokenize(stripped)
-    tags = pos_tag(tokens)
-
-    # Check if there's at least 2 content-carrying POS tokens
-    content_tags = {"NN", "NNS", "VB", "VBD", "VBG", "VBN", "VBP", "JJ", "RB"}
-    content_words = [word for word, tag in tags if tag in content_tags]
-
-    return len(content_words) >= 2
+    return True
 
 
 def process_input(user_input, gpt_output):
