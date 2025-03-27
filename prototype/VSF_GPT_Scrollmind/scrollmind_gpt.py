@@ -47,7 +47,10 @@ if st.button("Interpret Symbolically"):
             "- How do I know when clarity is real or recursive?"
         )
     else:
-        gpt_response = call_gpt(user_input)
+        with st.status("⚙️ VSF Engine decoding your mental equation...", expanded=False) as status:
+            gpt_response = call_gpt(user_input)
+            status.update(label="📜 Scroll generated successfully.", state="complete")
+
         symbolic_output = process_input(user_input, gpt_response)
 
         st.markdown("### 📜 GPT-Sculpted Scroll")
