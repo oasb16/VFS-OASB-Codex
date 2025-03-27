@@ -33,36 +33,46 @@ def extract_symbols_from_gpt(scroll):
     return re.findall(r"Symbol:\s*(Ξ|Σ|ψ₀|Ω|𝕀)", scroll)
 
 def process_input(user_input, gpt_output):
+    input_lower = user_input.lower()
+
+    def extract_symbols_from_gpt(scroll):
+        return re.findall(r"Symbol:\s*(Ξ|Σ|ψ₀|Ω|𝕀)", scroll)
+
+    symbol_keywords = {
+        "Ξ": ["repeat", "loop", "again", "same", "stuck", "cycle"],
+        "Σ": ["reveal", "clarity", "insight", "emerge", "pattern", "origin"],
+        "ψ₀": ["nothing", "void", "silence", "lost", "empty", "uncertain"],
+        "Ω": ["collapse", "burnout", "end", "exhaust", "vanish"],
+        "𝕀": ["paradox", "superposition", "observer", "dream", "contradiction", "exist and not", "mirror"]
+    }
+
+    def score_overlap(symbol):
+        return sum(w in input_lower for w in symbol_keywords[symbol])
+
     symbols = extract_symbols_from_gpt(gpt_output)
-    
-    # If GPT provided any symbols
+
     if symbols:
         primary = symbols[0]
-        score = 5
-        rating = "🟢 Symbolically Rich"
+        score = score_overlap(primary)
+        rating = (
+            "🟢 Symbolically Rich" if score >= 5 else
+            "🟡 Emerging" if score >= 3 else
+            "⚪ Basic" if score >= 1 else
+            "⚫ Weak Signal"
+        )
     else:
-        input_lower = user_input.lower()
-        symbol_keywords = {
-            "Ξ": ["repeat", "loop", "again", "same", "stuck", "cycle"],
-            "Σ": ["reveal", "clarity", "insight", "emerge", "pattern", "origin"],
-            "ψ₀": ["nothing", "void", "silence", "lost", "empty", "uncertain"],
-            "Ω": ["collapse", "burnout", "end", "exhaust", "vanish"],
-            "𝕀": ["paradox", "superposition", "observer", "dream", "contradiction", "exist and not", "mirror"]
-        }
-        scores = {s: sum(w in input_lower for w in words) for s, words in symbol_keywords.items()}
+        # fallback detection if GPT didn't help
+        scores = {s: score_overlap(s) for s in symbol_keywords}
         primary = max(scores, key=scores.get)
         score = scores[primary]
-
-        if score >= 4:
-            rating = "🟢 Symbolically Rich"
-        elif score >= 2:
-            rating = "🟡 Emerging"
-        elif score >= 1:
-            rating = "⚪ Basic"
-        else:
+        rating = (
+            "🟢 Symbolically Rich" if score >= 5 else
+            "🟡 Emerging" if score >= 3 else
+            "⚪ Basic" if score >= 1 else
+            "⚫ None"
+        )
+        if score == 0:
             primary = "∇"
-            rating = "⚫ None"
-            score = 0
 
     interpretation_map = {
         "Ξ": "Recursive identity or cognitive reprocessing detected. Pattern may need disruption.",
@@ -74,13 +84,38 @@ def process_input(user_input, gpt_output):
     }
 
     followups = {
-        "Ξ": "What would it take to break this pattern, not just escape it?",
-        "Σ": "What part of chaos feels like it's trying to form meaning?",
-        "ψ₀": "What shape would silence take, if it could form something?",
-        "Ω": "What’s worth letting go fully—so you stop rebuilding it?",
-        "𝕀": "What if both truths are real? What happens if neither is?",
-        "∇": "Try: 'What if I’m looping but don’t see it?' or 'What paradox defines my question?'"
+        "Ξ": {
+            1: "Could the loop be protective rather than destructive?",
+            3: "What belief system reinforces this repetition?",
+            5: "What would it take to break this pattern completely?"
+        },
+        "Σ": {
+            1: "What’s trying to emerge that you haven’t noticed yet?",
+            3: "What small patterns are becoming structure?",
+            5: "What insight just crossed the threshold of articulation?"
+        },
+        "ψ₀": {
+            1: "Is your uncertainty a signal or just noise?",
+            3: "What could take shape from this silence?",
+            5: "What shape would entropy take if it meant to form clarity?"
+        },
+        "Ω": {
+            1: "What recently collapsed, even subtly?",
+            3: "What structure have you outgrown but still carry?",
+            5: "What’s worth letting go fully—so you stop rebuilding it?"
+        },
+        "𝕀": {
+            1: "Where are two truths colliding?",
+            3: "Can you hold both sides of this contradiction?",
+            5: "What if both truths are real—and so are you in between?"
+        },
+        "∇": {
+            0: "Try: 'What paradox defines my question?' or 'Am I repeating a deeper pattern?'"
+        }
     }
+
+    # Pick best matching follow-up by score
+    followup_prompt = followups[primary].get(score, followups[primary][max(followups[primary])])
 
     scroll = gpt_output
     if primary == "∇" and "Symbol: ∇" not in gpt_output:
@@ -93,5 +128,5 @@ def process_input(user_input, gpt_output):
         "interpretation": interpretation_map[primary],
         "score": score,
         "rating": rating,
-        "suggested_followup": followups[primary]
+        "suggested_followup": followup_prompt
     }
