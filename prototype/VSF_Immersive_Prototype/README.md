@@ -1,0 +1,1 @@
+# VSF Immersive Prototype\n\nAn advanced symbolic simulator built with Streamlit, exploring how the Void Singularity Function solves paradoxes through immersive narrative, math bridging, and scroll-state feedback.
