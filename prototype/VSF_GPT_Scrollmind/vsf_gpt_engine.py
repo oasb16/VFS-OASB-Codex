@@ -1,7 +1,17 @@
 import re
 import spacy
+import importlib.util
+import subprocess
 
-nlp = spacy.load("en_core_web_sm")
+def ensure_spacy_model(model_name="en_core_web_sm"):
+    try:
+        spacy.load(model_name)
+    except OSError:
+        subprocess.run(["python", "-m", "spacy", "download", model_name])
+    return spacy.load(model_name)
+
+nlp = ensure_spacy_model()
+
 
 def is_meaningful_input(text):
     stripped = text.strip().lower()
