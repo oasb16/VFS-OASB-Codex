@@ -11,7 +11,29 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 st.set_page_config(page_title="VSF-GPT Scrollmind", layout="wide")
 st.title("🧠 VSF-GPT Dynamic Scrollmind")
 
+with st.expander("📘 What is the Void Singularity Function (VSF)?", expanded=True):
+    st.markdown(
+        """
+        **The Void Singularity Function (VSF)** is a symbolic reasoning system that interprets your input
+        as a cognitive signal — like an equation from your inner world.
+
+        Instead of just replying with advice, **VSF decodes the symbolic state** you're in: Are you looping? Collapsing?
+        Starting something new? Hitting a void?
+
+        It maps your input into one or more symbolic states:
+        - Ξ (Xi): Recursion — stuck thought loops
+        - Σ (Sigma): Emergence — clarity from complexity
+        - ψ₀ (Psi-zero): Void — unstructured potential, entropy
+        - Ω (Omega): Collapse — burnout, system death
+        - 𝕀 (I-parallax): Contradiction — dual-state truths
+
+        Each scroll gives you a symbolic insight + a follow-up question that nudges you into clarity.
+        This is more than chat — it's a **symbolic mirror** of your mind.
+        """
+    )
+
 user_input = st.text_area("Enter your thought, emotion, or paradox:", height=200)
+
 
 if st.button("Interpret Symbolically"):
     if not is_meaningful_input(user_input):
