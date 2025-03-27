@@ -1,37 +1,27 @@
 import re
-import spacy
-import importlib.util
-import subprocess
+import nltk
+from nltk.tokenize import word_tokenize
+from nltk import pos_tag
 
-def ensure_spacy_model(model_name="en_core_web_sm"):
-    try:
-        spacy.load(model_name)
-    except OSError:
-        subprocess.run(["python", "-m", "spacy", "download", model_name])
-    return spacy.load(model_name)
-
-nlp = ensure_spacy_model()
-
+nltk.download('punkt')
+nltk.download('averaged_perceptron_tagger')
 
 def is_meaningful_input(text):
     stripped = text.strip().lower()
-    if len(stripped) < 10:
-        return False
-    if stripped in {"asd", "test", "ok", "hello", "hi", "hmm", "123", "..." }:
+    if len(stripped) < 10 or stripped in {"asd", "test", "ok", "hello", "hi", "hmm", "..."}:
         return False
     if not any(char.isalpha() for char in stripped):
         return False
 
-    doc = nlp(stripped)
-    
-    # Count content-carrying parts of speech
-    content_tokens = [token for token in doc if token.pos_ in {"NOUN", "VERB", "ADJ", "ADV"}]
-    
-    # If there are too few content-bearing words, block
-    if len(content_tokens) < 2:
-        return False
+    tokens = word_tokenize(stripped)
+    tags = pos_tag(tokens)
 
-    return True
+    # Check if there's at least 2 content-carrying POS tokens
+    content_tags = {"NN", "NNS", "VB", "VBD", "VBG", "VBN", "VBP", "JJ", "RB"}
+    content_words = [word for word, tag in tags if tag in content_tags]
+
+    return len(content_words) >= 2
+
 
 def process_input(user_input, gpt_output):
     input_lower = user_input.lower()
