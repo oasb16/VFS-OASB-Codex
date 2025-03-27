@@ -39,41 +39,46 @@ def is_meaningful_input(user_input, threshold=0.80):
     return len(user_input.strip().split()) >= 3
 
 def process_input(user_input, gpt_output):
-    input_lower = user_input.lower()
-
-    # Keywords to detect symbolic state
-    symbol_keywords = {
-        "Ξ": ["repeat", "loop", "again", "same", "stuck", "cycle"],
-        "Σ": ["reveal", "clarity", "insight", "emerge", "pattern", "birth", "origin"],
-        "ψ₀": ["nothing", "void", "silence", "lost", "empty", "uncertain", "absence"],
-        "Ω": ["collapse", "burnout", "exhaust", "fall", "end", "vanish", "dissolve"],
-        "𝕀": ["paradox", "superposition", "observer", "dream", "contradiction", "both", "unreal", "rotate", "exist and not"]
-    }
-
-    # Count keyword matches per symbol
-    scores = {symbol: sum(1 for w in symbol_keywords[symbol] if w in input_lower) for symbol in symbol_keywords}
-    top_symbol = max(scores, key=scores.get)
-    top_score = scores[top_symbol]
-
-    # Signal Rating
-    if top_score >= 4:
+    # Step 1: Try to extract Symbol from GPT output (if it declared it)
+    symbol_match = re.search(r"Symbol:\s*(Ξ|Σ|ψ₀|Ω|𝕀)", gpt_output)
+    if symbol_match:
+        symbol = symbol_match.group(1)
+        score = 5  # high confidence if GPT tagged it
         rating = "🟢 Symbolically Rich"
-    elif top_score >= 2:
-        rating = "🟡 Emerging"
-    elif top_score >= 1:
-        rating = "⚪ Basic"
     else:
-        rating = "⚫ None"
-        top_symbol = "∇"
+        # Fallback: keyword scoring from user_input
+        input_lower = user_input.lower()
 
-    # Interpretation map
+        symbol_keywords = {
+            "Ξ": ["repeat", "loop", "again", "same", "stuck", "cycle"],
+            "Σ": ["reveal", "clarity", "insight", "emerge", "pattern", "origin"],
+            "ψ₀": ["nothing", "void", "silence", "lost", "empty", "uncertain"],
+            "Ω": ["collapse", "burnout", "end", "exhaust", "vanish"],
+            "𝕀": ["paradox", "superposition", "observer", "dream", "contradiction", "exist and not", "mirror"]
+        }
+
+        scores = {s: sum(w in input_lower for w in words) for s, words in symbol_keywords.items()}
+        symbol = max(scores, key=scores.get)
+        score = scores[symbol]
+
+        if score >= 4:
+            rating = "🟢 Symbolically Rich"
+        elif score >= 2:
+            rating = "🟡 Emerging"
+        elif score >= 1:
+            rating = "⚪ Basic"
+        else:
+            symbol = "∇"
+            rating = "⚫ None"
+            score = 0
+
     interpretation_map = {
         "Ξ": "Recursive identity or cognitive reprocessing detected. Pattern may need disruption.",
-        "Σ": "Input reflects clarity forming from chaos. New symbolic structure crystallizing.",
-        "ψ₀": "Silence or unformed potential detected. May represent the edge of articulation.",
-        "Ω": "Collapse state. Language reflects exhaustion, burnout, or structure decay.",
-        "𝕀": "Contradictory, dream-like, or multi-dimensional logic. Perceptual parallax in play.",
-        "∇": "Symbolic pattern not detected. Try deeper specificity or contradiction."
+        "Σ": "Clarity forming from chaos. New symbolic structure crystallizing.",
+        "ψ₀": "Silence or unformed potential. May represent the edge of articulation.",
+        "Ω": "Collapse or burnout. Ego or structure loss detected.",
+        "𝕀": "Paradoxical or dual-state logic. Symbolic phase drift.",
+        "∇": "Pattern not detected. Consider specificity, contradiction, or recursion."
     }
 
     followups = {
@@ -85,16 +90,16 @@ def process_input(user_input, gpt_output):
         "∇": "Try: 'What if I’m looping but don’t see it?' or 'What paradox defines my question?'"
     }
 
-    # Respect GPT’s scroll — do not append fallback unless truly empty
+    # Respect scroll if GPT gave a great one
     scroll = gpt_output
-    if top_symbol == "∇" and "Symbol Activated" not in gpt_output:
+    if symbol == "∇" and "Symbol: ∇" not in gpt_output:
         scroll += "\n\n(∇ signal indeterminate – consider rephrasing.)"
 
     return {
-        "symbol": top_symbol,
+        "symbol": symbol,
         "scroll": scroll,
-        "interpretation": interpretation_map[top_symbol],
-        "score": top_score,
+        "interpretation": interpretation_map[symbol],
+        "score": score,
         "rating": rating,
-        "suggested_followup": followups[top_symbol]
+        "suggested_followup": followups[symbol]
     }
